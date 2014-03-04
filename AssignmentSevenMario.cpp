@@ -1,6 +1,6 @@
 /*
  *author: Ethan Clevenger
- *date: 11/12/12
+ *date: 3/3/14
  */
 
 #include <stdlib.h>
@@ -11,21 +11,25 @@
 #include <string.h>
 #include <iostream>
 #include "Windows.h"
+#include <time.h>
 
 using namespace std;
 
 #define TRUE 1
 #define FALSE 0
+#define TARGET_FPS 30
+#define SPEED_X .1
+#define SPEED_Y .24
 
 double marioPos = 0.0;
 double marioHops = 0.0;
-int time = 0;
 bool up = false;
 bool canJump = true;
 bool facingRight = true;
 bool movingRight = false;
 bool movingLeft = false;
 bool hor = false;
+double time_passed = 0;
 
 GLfloat vertices[] = {-1.0,-1.0,0.0, 1.0,-1.0,0.0, 1.0,1.0,0.0, -1.0,1.0,0.0};
 GLfloat texVertices[] = {0.0,1.0, 1.0,1.0, 1.0,0.0, 0.0,0.0};
@@ -164,8 +168,10 @@ void init(void)
     
 }
 
-void display(void)
+void display()
 {
+	clock_t start;
+	start = clock();
 	//clear buffers
 	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 	glEnable(GL_TEXTURE_2D);
@@ -204,9 +210,11 @@ void display(void)
 	{
 		glScaled(.25, .25, 1);
 		if(movingRight == true)
-		{marioPos+=.2;}
+		{marioPos+=SPEED_X*time_passed;
+		if(marioPos > 18.34) marioPos = 18.34;}
 		if(movingLeft == true)
-		{marioPos-=.2;}
+		{marioPos-=SPEED_X*time_passed;
+		if(marioPos < -4.1) marioPos = -4.1;}
 		glTranslated(-7.0 + marioPos, -8.6+marioHops, 0.0);
 		if(facingRight == false)
 		{
@@ -251,6 +259,8 @@ void display(void)
 	
 	glPopMatrix();
 	glutSwapBuffers();
+	
+	time_passed = ((double) (clock() - start)/CLOCKS_PER_SEC)*1000;
     
 	glDisable(GL_TEXTURE_2D);
 }
@@ -310,14 +320,11 @@ void special_up (int key, int x, int y)
 	glutPostRedisplay();
 }
 
-void specialUp (int key, int x, int y)
-{}
-
 
 void timer(int extra) {
 	if(up == true) 
 	{
-		marioHops+=.33;
+		marioHops+=SPEED_Y*time_passed;
 		if(marioHops > 5)
 		{
 			up = false;
@@ -327,7 +334,7 @@ void timer(int extra) {
 	{
 		if(marioHops > 0)
 		{
-			marioHops-=.33;
+			marioHops-=SPEED_Y*time_passed;
 		}
 	}
 	glutTimerFunc(extra, timer,extra);
@@ -378,7 +385,7 @@ int main(int argc, char** argv)
 	glutInitDisplayMode ( GLUT_DOUBLE | GLUT_RGBA | GLUT_DEPTH | GLUT_ALPHA);
 	glutInitWindowSize(WIDTH, HEIGHT);
 	glutInitWindowPosition(100, 100);
-	glutCreateWindow("Drake CS 147");
+	glutCreateWindow("Ethan Clevenger - OpenGL Exercise");
 	init();
 	glutDisplayFunc(display);
 	glutKeyboardFunc(keyboard);
